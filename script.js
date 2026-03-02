@@ -5,10 +5,10 @@ const spinner = document.getElementById('loading-spinner');
 const countryInfo = document.getElementById('country-info');
 const borderingCountries = document.getElementById('bordering-countries');
 const errorMessage = document.getElementById('error-message');
-
+spinner.classList.add('hidden');
 async function searchCountry(countryName) {
     try {
-        
+       
         countryInfo.innerHTML = '';
         borderingCountries.innerHTML = '';
         errorMessage.textContent = '';
@@ -16,15 +16,15 @@ async function searchCountry(countryName) {
         
         spinner.classList.remove('hidden');
 
-       
+      
         const response = await fetch(`https://restcountries.com/v3.1/name/${countryName}`);
-        
+
         if (!response.ok) {
-            throw new Error('Country not found');
+            throw new Error('Country not found. Please try again.');
         }
 
         const data = await response.json();
-        const country = data[0];
+        const country = data[0];  
 
         
         countryInfo.innerHTML = `
@@ -37,18 +37,23 @@ async function searchCountry(countryName) {
 
         
         if (country.borders && country.borders.length > 0) {
+
             for (let code of country.borders) {
+
                 const borderResponse = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
                 const borderData = await borderResponse.json();
                 const borderCountry = borderData[0];
 
                 borderingCountries.innerHTML += `
-                    <div>
+                    <article>
                         <p>${borderCountry.name.common}</p>
-                        <img src="${borderCountry.flags.svg}" width="100">
-                    </div>
+                        <img src="${borderCountry.flags.svg}" 
+                             alt="${borderCountry.name.common} flag" 
+                             width="100">
+                    </article>
                 `;
             }
+
         } else {
             borderingCountries.innerHTML = `<p>No bordering countries.</p>`;
         }
@@ -56,7 +61,6 @@ async function searchCountry(countryName) {
     } catch (error) {
         errorMessage.textContent = error.message;
     } finally {
-        
         spinner.classList.add('hidden');
     }
 }
@@ -70,8 +74,8 @@ button.addEventListener('click', () => {
 });
 
 
-input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+input.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
         const countryName = input.value.trim();
         if (countryName) {
             searchCountry(countryName);
